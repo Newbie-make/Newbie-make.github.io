@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <title>Donkey Kong Country 3 Database</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donkey Kong Country 3 Database</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1, h2 {
+            color: #8b4513;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        #searchBar {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #8b4513;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #a0522d;
+        }
+        .level-info {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .level-info h2 {
+            margin-top: 0;
+        }
+        .info-item {
+            margin-bottom: 10px;
+        }
+        .info-item strong {
+            font-weight: bold;
+            color: #4a4a4a;
+        }
+    </style>
+</head>
+<body>
+    <h1>Donkey Kong Country 3 Database</h1>
+    
+    <div class="controls">
+        <select id="versionSelect" onchange="filterLevels()">
+            <option value="all">All Versions</option>
+            <option value="SNES">SNES Only</option>
+            <option value="GBA">GBA Only</option>
+        </select>
+        <select id="worldSelect" onchange="filterLevels()">
+            <option value="all">All Worlds</option>
+            <!-- World options will be added dynamically -->
+        </select>
+        <select id="musicSelect" onchange="filterLevels()">
+            <option value="all">All Music Tracks</option>
+            <!-- Music track options will be added dynamically -->
+        </select>
+        <select id="levelTypeSelect" onchange="filterLevels()">
+            <option value="all">All Level Types</option>
+            <!-- Level type options will be added dynamically -->
+        </select>
+        <input type="text" id="searchBar" placeholder="Search for a level..." oninput="filterLevels()">
+    </div>
+
+    <div id="levelContainer"></div>
+
+    <script>
+        const levelData = {
+    "Lakeside Limbo": {
+        "SNES": {world: "Lake Orangatanga", worldNumber: "1", levelNumber: "1", bonus: "2", musicTrack: "Stilt Village", levelType: "Stilt"},
+        "GBA": {world: "Lake Orangatanga", worldNumber: "1", levelNumber: "1", bonus: "2", musicTrack: "Stilt Village", levelType: "Stilt"}
+    },
+    "Doorstop Dash": {
+        "SNES": {world: "Lake Orangatanga", worldNumber: "1", levelNumber: "2", bonus: "2", musicTrack: "Mill Fever", levelType: "Mill"},
+        "GBA": {world: "Lake Orangatanga", worldNumber: "1", levelNumber: "2", bonus: "2", musicTrack: "Mill Fever", levelType: "Mill"}
+    },
+    "Tidal Trouble": {
+        "SNES": {world: "Lake Orangatanga", worldNumber: "1", levelNumber: "3", bonus: "2", musicTrack: "Stilt Village", levelType: "Stilt"},
+        "GBA": {world: "Lake Orangatanga", worldNumber: "1", levelNumber: "3", bonus: "2", musicTrack: "Stilt Village", levelType: "Stilt"}
+    },
+    "Skidda's Row": {
+        "SNES": {world: "Lake Orangatanga", worldNumber: "1", levelNumber: "4", bonus: "2", musicTrack: "Frosty Frolics", levelType: "Snow"},
+        "GBA": {world: "Lake Orangatanga", worldNumber: "1", levelNumber: "4", bonus: "2", musicTrack: "Frosty Frolics", levelType: "Snow"}
+    },
+    "Murky Mill": {
+        "SNES": {world: "Lake Orangatanga", worldNumber: "1", levelNumber: "5", bonus: "2", musicTrack: "Mill Fever", levelType: "Mill"},
+        "GBA": {world: "Lake Orangatanga", worldNumber: "1", levelNumber: "5", bonus: "2", musicTrack: "Mill Fever", levelType: "Mill"}
+    },
+    "Belcha's Barn": {
+        "SNES": {world: "Lake Orangatanga", worldNumber: "1", levelNumber: "BOSS", bonus: "0", musicTrack: "Boss Boogie", levelType: "Mill"},
+        "GBA": {world: "Lake Orangatanga", worldNumber: "1", levelNumber: "BOSS", bonus: "0", musicTrack: "Boss Boogie", levelType: "Mill"}
+    },
+    "Barrel Shield Bust-Up": {
+        "SNES": {world: "Kremwood Forest", worldNumber: "2", levelNumber: "1", bonus: "2", musicTrack: "Treetop Tumble", levelType: "Tree"},
+        "GBA": {world: "Kremwood Forest", worldNumber: "2", levelNumber: "4", bonus: "2", musicTrack: "Treetop Tumble", levelType: "Tree"}
+    },
+    "Riverside Race": {
+        "SNES": {world: "Kremwood Forest", worldNumber: "2", levelNumber: "2", bonus: "2", musicTrack: "Hot Pursuit", levelType: "Riverbank"},
+        "GBA": {world: "Kremwood Forest", worldNumber: "2", levelNumber: "2", bonus: "2", musicTrack: "Enchanted Riverbank", levelType: "Riverbank"}
+    },
+    "Squeals on Wheels": {
+        "SNES": {world: "Kremwood Forest", worldNumber: "2", levelNumber: "3", bonus: "2", musicTrack: "Mill Fever", levelType: "Mill"},
+        "GBA": {world: "Kremwood Forest", worldNumber: "2", levelNumber: "3", bonus: "2", musicTrack: "Mill Fever", levelType: "Mill"}
+    },
+    "Springin' Spiders": {
+        "SNES": {world: "Kremwood Forest", worldNumber: "2", levelNumber: "4", bonus: "2", musicTrack: "Treetop Tumble", levelType: "Tree"},
+        "GBA": {world: "Kremwood Forest", worldNumber: "2", levelNumber: "1", bonus: "2", musicTrack: "Treetop Tumble", levelType: "Tree"}
+    },
+    "Bobbing Barrel Brawl": {
+        "SNES": {world: "Kremwood Forest", worldNumber: "2", levelNumber: "5", bonus: "2", musicTrack: "Enchanted Riverbank", levelType: "Riverbank"},
+        "GBA": {world: "Kremwood Forest", worldNumber: "2", levelNumber: "5", bonus: "2", musicTrack: "Enchanted Riverbank", levelType: "Riverbank"}
+    },
+    "Arich's Ambush": {
+        "SNES": {world: "Kremwood Forest", worldNumber: "2", levelNumber: "BOSS", bonus: "0", musicTrack: "Boss Boogie", levelType: "Tree"},
+        "GBA": {world: "Kremwood Forest", worldNumber: "2", levelNumber: "BOSS", bonus: "0", musicTrack: "Arich Boss", levelType: "Tree"}
+    },
+    "Bazza's Blockade": {
+        "SNES": {world: "Cotton-Top Cove", worldNumber: "3", levelNumber: "1", bonus: "2", musicTrack: "Water World", levelType: "Coral"},
+        "GBA": {world: "Cotton-Top Cove", worldNumber: "3", levelNumber: "1", bonus: "2", musicTrack: "Water World", levelType: "Coral"}
+    },
+    "Rocket Barrel Ride": {
+        "SNES": {world: "Cotton-Top Cove", worldNumber: "3", levelNumber: "2", bonus: "2", musicTrack: "Cascade Capers", levelType: "Falls"},
+        "GBA": {world: "Cotton-Top Cove", worldNumber: "3", levelNumber: "2", bonus: "2", musicTrack: "Cascade Capers", levelType: "Falls"}
+    },
+    "Kreeping Klasps": {
+        "SNES": {world: "Cotton-Top Cove", worldNumber: "3", levelNumber: "3", bonus: "2", musicTrack: "Stilt Village", levelType: "Stilt"},
+        "GBA": {world: "Cotton-Top Cove", worldNumber: "3", levelNumber: "3", bonus: "2", musicTrack: "Stilt Village", levelType: "Stilt"}
+    },
+    "Tracker Barrel Trek": {
+        "SNES": {world: "Cotton-Top Cove", worldNumber: "3", levelNumber: "4", bonus: "2", musicTrack: "Cascade Capers", levelType: "Falls"},
+        "GBA": {world: "Cotton-Top Cove", worldNumber: "3", levelNumber: "4", bonus: "2", musicTrack: "Cascade Capers", levelType: "Falls"}
+    },
+    "Food Fish Frenzy": {
+        "SNES": {world: "Cotton-Top Cove", worldNumber: "3", levelNumber: "5", bonus: "2", musicTrack: "Water World", levelType: "Coral"},
+        "GBA": {world: "Cotton-Top Cove", worldNumber: "3", levelNumber: "5", bonus: "2", musicTrack: "Water World", levelType: "Coral"}
+    },
+    "Squirt's Showdown": {
+        "SNES": {world: "Cotton-Top Cove", worldNumber: "3", levelNumber: "BOSS", bonus: "0", musicTrack: "Boss Boogie", levelType: "Falls"},
+        "GBA": {world: "Cotton-Top Cove", worldNumber: "3", levelNumber: "BOSS", bonus: "0", musicTrack: "Boss Boogie", levelType: "Falls"}
+    },
+    "Fireball Frenzy": {
+        "SNES": {world: "Mekanos", worldNumber: "4", levelNumber: "1", bonus: "2", musicTrack: "Nuts and Bolts", levelType: "Machine"},
+        "GBA": {world: "Mekanos", worldNumber: "4", levelNumber: "1", bonus: "2", musicTrack: "Nuts and Bolts", levelType: "Machine"}
+    },
+    "Demolition Drainpipe": {
+        "SNES": {world: "Mekanos", worldNumber: "4", levelNumber: "2", bonus: "2", musicTrack: "Hot Pursuit", levelType: "Tube"},
+        "GBA": {world: "Mekanos", worldNumber: "4", levelNumber: "2", bonus: "2", musicTrack: "Hot Pursuit", levelType: "Tube"}
+    },
+    "Ripsaw Rage": {
+        "SNES": {world: "Mekanos", worldNumber: "4", levelNumber: "3", bonus: "2", musicTrack: "Treetop Tumble", levelType: "Tree"},
+        "GBA": {world: "Mekanos", worldNumber: "4", levelNumber: "3", bonus: "2", musicTrack: "Treetop Tumble", levelType: "Tree"}
+    },
+    "Blazing Bazukas": {
+        "SNES": {world: "Mekanos", worldNumber: "4", levelNumber: "4", bonus: "2", musicTrack: "Nuts and Bolts", levelType: "Machine"},
+        "GBA": {world: "Mekanos", worldNumber: "4", levelNumber: "4", bonus: "2", musicTrack: "Nuts and Bolts", levelType: "Machine"}
+    },
+    "Low-G Labrynith": {
+        "SNES": {world: "Mekanos", worldNumber: "4", levelNumber: "5", bonus: "2", musicTrack: "Pokey Pipes", levelType: "Tube"},
+        "GBA": {world: "Mekanos", worldNumber: "4", levelNumber: "5", bonus: "2", musicTrack: "Pokey Pipes", levelType: "Tube"}
+    },
+    "Kaos Karnage": {
+        "SNES": {world: "Mekanos", worldNumber: "4", levelNumber: "BOSS", bonus: "2", musicTrack: "Boss Boogie", levelType: "Machine"},
+        "GBA": {world: "Mekanos", worldNumber: "4", levelNumber: "BOSS", bonus: "2", musicTrack: "Boss Boogie", levelType: "Machine"}
+    },
+    "Dingy Drainpipe": {
+        "GBA": {world: "Pacifica", worldNumber: "7", levelNumber: "1", bonus: "2", musicTrack: "Pokey Pipes", levelType: "Tube"}
+    },
+    "Stormy Seas": {
+        "GBA": {world: "Pacifica", worldNumber: "7", levelNumber: "2", bonus: "2", musicTrack: "Stilt Village", levelType: "Stilt"}
+    },
+    "Sunken Spruce": {
+        "GBA": {world: "Pacifica", worldNumber: "7", levelNumber: "3", bonus: "2", musicTrack: "Treetop Tumble", levelType: "Tree"}
+    },
+    "Cliffide Blast": {
+        "GBA": {world: "Pacifica", worldNumber: "7", levelNumber: "4", bonus: "2", musicTrack: "Rockface Rumble", levelType: "Cliff"}
+    },
+    "Ripcurl Reef": {
+        "GBA": {world: "Pacifica", worldNumber: "7", levelNumber: "5", bonus: "2", musicTrack: "Water World", levelType: "Coral"}
+    },
+    "Surf's Up": {
+        "GBA": {world: "Pacifica", worldNumber: "7", levelNumber: "6", bonus: "2", musicTrack: "Hot Pursuit", levelType: "Tube"}
+    },
+    "Barbos's Barrier": {
+        "SNES": {world: "Razor Ridge", worldNumber: "6", levelNumber: "BOSS", bonus: "0", musicTrack: "Boss Boogie", levelType: "Coral"},
+        "GBA": {world: "Pacifica", worldNumber: "7", levelNumber: "BOSS", bonus: "0", musicTrack: "Boss Boogie", levelType: "Coral"}
+    },
+    "Krevice Kreepers": {
+        "SNES": {world: "K3", worldNumber: "5", levelNumber: "1", bonus: "2", musicTrack: "Rockface Rumble", levelType: "Cliff"},
+        "GBA": {world: "K3", worldNumber: "5", levelNumber: "1", bonus: "2", musicTrack: "Rockface Rumble", levelType: "Cliff"}
+    },
+    "Tearaway Toboggan": {
+        "SNES": {world: "K3", worldNumber: "5", levelNumber: "2", bonus: "2", musicTrack: "Hot Pursuit", levelType: "Snow"},
+        "GBA": {world: "K3", worldNumber: "5", levelNumber: "2", bonus: "2", musicTrack: "Hot Pursuit", levelType: "Snow"}
+    },
+    "Barrel Drop Bounce": {
+        "SNES": {world: "K3", worldNumber: "5", levelNumber: "3", bonus: "2", musicTrack: "Cascade Capers", levelType: "Falls"},
+        "GBA": {world: "K3", worldNumber: "5", levelNumber: "3", bonus: "2", musicTrack: "Cascade Capers", levelType: "Falls"}
+    },
+    "Krac-Shot Kroc": {
+        "SNES": {world: "K3", worldNumber: "5", levelNumber: "4", bonus: "2", musicTrack: "Nuts and Bolts", levelType: "Machine"},
+        "GBA": {world: "K3", worldNumber: "5", levelNumber: "4", bonus: "2", musicTrack: "Nuts and Bolts", levelType: "Machine"}
+    },
+    "Lemguin Lunge": {
+        "SNES": {world: "K3", worldNumber: "5", levelNumber: "5", bonus: "2", musicTrack: "Frosty Frolics", levelType: "Snow"},
+        "GBA": {world: "K3", worldNumber: "5", levelNumber: "5", bonus: "2", musicTrack: "Frosty Frolics", levelType: "Snow"}
+    },
+    "Bleak's House": {
+        "SNES": {world: "K3", worldNumber: "5", levelNumber: "BOSS", bonus: "2", musicTrack: "Boss Boogie", levelType: "Snow"},
+        "GBA": {world: "K3", worldNumber: "5", levelNumber: "BOSS", bonus: "2", musicTrack: "Boss Boogie", levelType: "Snow"}
+    },
+     "Buzzer's Barrage": {
+        "SNES": {world: "Razor Ridge", worldNumber: "6", levelNumber: "1", bonus: "2", musicTrack: "Cavern Caprice", levelType: "Cave"},
+        "GBA": {world: "Razor Ridge", worldNumber: "6", levelNumber: "1", bonus: "2", musicTrack: "Cavern Caprice", levelType: "Cave"}
+    },
+    "Kong-Fused Cliffs": {
+        "SNES": {world: "Razor Ridge", worldNumber: "6", levelNumber: "2", bonus: "2", musicTrack: "Rockface Rumble", levelType: "Cliff"},
+        "GBA": {world: "Razor Ridge", worldNumber: "6", levelNumber: "2", bonus: "2", musicTrack: "Rockface Rumble", levelType: "Cliff"}
+    },
+    "Flood-Lit Fish": {
+        "SNES": {world: "Razor Ridge", worldNumber: "6", levelNumber: "3", bonus: "2", musicTrack: "Water World", levelType: "Coral"},
+        "GBA": {world: "Razor Ridge", worldNumber: "6", levelNumber: "3", bonus: "2", musicTrack: "Water World", levelType: "Coral"}
+    },
+    "Pot Hole Panic": {
+        "SNES": {world: "Razor Ridge", worldNumber: "6", levelNumber: "4", bonus: "2", musicTrack: "Cavern Caprice", levelType: "Cave"},
+        "GBA": {world: "Razor Ridge", worldNumber: "6", levelNumber: "4", bonus: "2", musicTrack: "Cavern Caprice", levelType: "Cave"}
+    },
+    "Ropey Rumpus": {
+        "SNES": {world: "Razor Ridge", worldNumber: "6", levelNumber: "5", bonus: "2", musicTrack: "Rockface Rumble", levelType: "Cliff"},
+        "GBA": {world: "Razor Ridge", worldNumber: "6", levelNumber: "5", bonus: "2", musicTrack: "Rockface Rumble", levelType: "Cliff"}
+    },
+    "Kroctopus Krush": {
+        "GBA": {world: "Razor Ridge", worldNumber: "6", levelNumber: "BOSS", bonus: "0", musicTrack: "Arich Boss", levelType: "Falls"}
+    },
+    "Konveyor Rope Klash": {
+        "SNES": {world: "Kaos Kore", worldNumber: "7", levelNumber: "1", bonus: "2", musicTrack: "Jungle Jitter", levelType: "Jungle"},
+        "GBA": {world: "Kaos Kore", worldNumber: "8", levelNumber: "1", bonus: "2", musicTrack: "Jungle Jitter", levelType: "Jungle"}
+    },
+    "Creepy Caverns": {
+        "SNES": {world: "Kaos Kore", worldNumber: "7", levelNumber: "2", bonus: "2", musicTrack: "Caverns Caprice", levelType: "Cave"},
+        "GBA": {world: "Kaos Kore", worldNumber: "8", levelNumber: "2", bonus: "2", musicTrack: "Cavern Caprice", levelType: "Cave"}
+    },
+    "Lightning Lookout": {
+        "SNES": {world: "Kaos Kore", worldNumber: "7", levelNumber: "3", bonus: "2", musicTrack: "Enchanted Riverbank", levelType: "Riverbank"},
+        "GBA": {world: "Kaos Kore", worldNumber: "8", levelNumber: "3", bonus: "2", musicTrack: "Enchanted Riverbank", levelType: "Riverbank"}
+    },
+    "Koindozer Klamber": {
+        "SNES": {world: "Kaos Kore", worldNumber: "7", levelNumber: "4", bonus: "2", musicTrack: "Jungle Jitter", levelType: "Jungle"},
+        "GBA": {world: "Kaos Kore", worldNumber: "8", levelNumber: "4", bonus: "2", musicTrack: "Jungle Jitter", levelType: "Jungle"}
+    },
+    "Poisonous Pipeline": {
+        "SNES": {world: "Kaos Kore", worldNumber: "7", levelNumber: "5", bonus: "2", musicTrack: "Pokey Pipes", levelType: "Tube"},
+        "GBA": {world: "Kaos Kore", worldNumber: "8", levelNumber: "5", bonus: "2", musicTrack: "Pokey Pipes", levelType: "Tube"}
+    },
+    "Kastle Kaos": {
+        "SNES": {world: "Kaos Kore", worldNumber: "7", levelNumber: "BOSS", bonus: "0", musicTrack: "Big Boss Blues", levelType: "Kastle Kaos"},
+        "GBA": {world: "Kaos Kore", worldNumber: "8", levelNumber: "BOSS", bonus: "0", musicTrack: "Boss Boogie", levelType: "Kastle Kaos"}
+    },
+    "Stampede Sprint": {
+        "SNES": {world: "Krematoa", worldNumber: "8", levelNumber: "1", bonus: "3", musicTrack: "Hot Pursuit", levelType: "Jungle"},
+        "GBA": {world: "Krematoa", worldNumber: "9", levelNumber: "1", bonus: "3", musicTrack: "Banana Queen, Chase", levelType: "Jungle"}
+    },
+    "Criss Cross Cliffs": {
+        "SNES": {world: "Krematoa", worldNumber: "8", levelNumber: "2", bonus: "2", musicTrack: "Rockface Rumble", levelType: "Cliff"},
+        "GBA": {world: "Krematoa", worldNumber: "9", levelNumber: "2", bonus: "2", musicTrack: "Rockface Rumble", levelType: "Cliff"}
+    },
+    "Tyrant Twin Tussle": {
+        "SNES": {world: "Krematoa", worldNumber: "8", levelNumber: "3", bonus: "3", musicTrack: "Cavern Caprice", levelType: "Cave"},
+        "GBA": {world: "Krematoa", worldNumber: "9", levelNumber: "3", bonus: "3", musicTrack: "Cavern Caprice", levelType: "Cave"}
+    },
+    "Swoopy Salvo": {
+        "SNES": {world: "Krematoa", worldNumber: "8", levelNumber: "4", bonus: "3", musicTrack: "Treetop Tumble", levelType: "Tree"},
+        "GBA": {world: "Krematoa", worldNumber: "9", levelNumber: "4", bonus: "3", musicTrack: "Treetop Tumble", levelType: "Tree"}
+    },
+    "Rocket Rush": {
+        "SNES": {world: "Krematoa", worldNumber: "8", levelNumber: "5", bonus: "0", musicTrack: "Rocket Run", levelType: "Cliff"},
+        "GBA": {world: "Krematoa", worldNumber: "9", levelNumber: "5", bonus: "0", musicTrack: "Hot Pursuit", levelType: "Cliff"}
+    },
+    "Knautilus": {
+        "SNES": {world: "Krematoa", worldNumber: "8", levelNumber: "BOSS", bonus: "0", musicTrack: "Big Boss Blues", levelType: "The Knautilus"},
+        "GBA": {world: "Krematoa", worldNumber: "9", levelNumber: "BOSS", bonus: "0", musicTrack: "Boss Boogie", levelType: "The Knautilus"}
+    }
+};
+
+        function initializeFilters() {
+            const worlds = new Set();
+            const musicTracks = new Set();
+            const levelTypes = new Set();
+
+            for (const levelName in levelData) {
+                for (const version in levelData[levelName]) {
+                    const level = levelData[levelName][version];
+                    worlds.add(level.world);
+                    musicTracks.add(level.musicTrack);
+                    levelTypes.add(level.levelType);
+                }
+            }
+
+            const worldSelect = document.getElementById('worldSelect');
+            const musicSelect = document.getElementById('musicSelect');
+            const levelTypeSelect = document.getElementById('levelTypeSelect');
+
+            function addOptions(select, options) {
+                for (const option of Array.from(options).sort()) {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option;
+                    optionElement.textContent = option;
+                    select.appendChild(optionElement);
+                }
+            }
+
+            addOptions(worldSelect, worlds);
+            addOptions(musicSelect, musicTracks);
+            addOptions(levelTypeSelect, levelTypes);
+        }
+
+        function displayLevelInfo(levelName, version) {
+            const levelInfo = levelData[levelName][version];
+            return `
+                <div class="level-info">
+                    <h2>${levelName} (${version})</h2>
+                    <div class="info-item"><strong>World:</strong> ${levelInfo.world}</div>
+                    <div class="info-item"><strong>World Number:</strong> ${levelInfo.worldNumber}</div>
+                    <div class="info-item"><strong>Level Number:</strong> ${levelInfo.levelNumber}</div>
+                    <div class="info-item"><strong>Bonus Stages:</strong> ${levelInfo.bonus}</div>
+                    <div class="info-item"><strong>Music Track:</strong> ${levelInfo.musicTrack}</div>
+                    <div class="info-item"><strong>Level Type:</strong> ${levelInfo.levelType}</div>
+                </div>
+            `;
+        }
+
+         function filterLevels() {
+            const version = document.getElementById('versionSelect').value;
+            const world = document.getElementById('worldSelect').value;
+            const musicTrack = document.getElementById('musicSelect').value;
+            const levelType = document.getElementById('levelTypeSelect').value;
+            const searchTerm = document.getElementById('searchBar').value.toLowerCase();
+
+            const container = document.getElementById('levelContainer');
+            container.innerHTML = '';
+
+            // Sort levels by world number and level number
+            const sortedLevels = Object.entries(levelData).sort((a, b) => {
+                const aInfo = a[1][version] || a[1]['SNES'] || a[1]['GBA'];
+                const bInfo = b[1][version] || b[1]['SNES'] || b[1]['GBA'];
+                if (aInfo.worldNumber !== bInfo.worldNumber) {
+                    return parseInt(aInfo.worldNumber) - parseInt(bInfo.worldNumber);
+                }
+                return parseInt(aInfo.levelNumber) - parseInt(bInfo.levelNumber);
+            });
+
+            for (const [levelName, levelVersions] of sortedLevels) {
+                if (levelName.toLowerCase().includes(searchTerm)) {
+                    for (const ver in levelVersions) {
+                        if (version === 'all' || version === ver) {
+                            const level = levelVersions[ver];
+                            if (
+                                (world === 'all' || level.world === world) &&
+                                (musicTrack === 'all' || level.musicTrack === musicTrack) &&
+                                (levelType === 'all' || level.levelType === levelType)
+                            ) {
+                                container.innerHTML += displayLevelInfo(levelName, ver);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Initialize filters and display all levels
+        initializeFilters();
+        filterLevels();
+    </script>
+</body>
+</html>
